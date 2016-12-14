@@ -1,0 +1,88 @@
+/**
+* ReadSHT1xValues
+*
+* Read temperature and humidity values from an SHT1x-series (SHT10,
+* SHT11, SHT15) sensor.
+*
+* Copyright 2009 Jonathan Oxer <jon@oxer.com.au>
+* www.practicalarduino.com
+*/
+
+#include <Wire.h>
+#include <SHT1x.h>
+#include "U8glib.h"
+
+// Specify data and clock connections and instantiate SHT1x object
+#define dataPin 10
+#define clockPin 11
+SHT1x sht1x(dataPin, clockPin);
+U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);
+
+void setup()
+{
+Serial.begin(38400); // Open serial connection to report values to host
+Serial.println("Starting up");
+first();//运行下面的自定义的函数
+}int temp_c;
+int temp_f;
+int humidity;//定义值
+void first(){
+ u8g.firstPage();//创作首页文件，为了在oled上显示必须要的字头
+  do
+  {
+    u8g.setFont(u8g_font_fixed_v0r);//有setFont的都是设定字体
+    u8g.setPrintPos(0, 20);//这个是设定显示的点的坐标（在哪显示你要print的东西）
+    u8g.print("Welcome to our");
+    u8g.setFont(u8g_font_9x18Br);
+    u8g.setPrintPos(0, 37);
+    u8g.print("Temp&hum Oled");
+    u8g.setFont(u8g_font_fixed_v0r);
+    u8g.setPrintPos(0,50 );
+    u8g.print("     we are group DIO");
+  } while (u8g.nextPage());  
+  delay(3000);//延时
+}
+
+void draw(void) {              //自定义draw函数
+ u8g.setFont(u8g_font_osb18);
+  u8g.setPrintPos(0, 20);
+  u8g.print(temp_c);
+  u8g.setPrintPos(35, 20 );
+  u8g.print("C/");
+  u8g.setPrintPos(65, 20);
+   u8g.print(temp_f);
+    u8g.setPrintPos(100, 20 );
+  u8g.print("F");
+   u8g.setPrintPos(50, 45);
+   u8g.print(humidity);
+    u8g.setPrintPos(80, 45 );
+  u8g.print("%");
+  u8g.setFont(u8g_font_9x18Br);
+   u8g.setPrintPos(0, 45);
+   u8g.print("Hum");
+  
+}
+
+void loop()           //执行循环
+{
+
+// Read values from the sensor
+temp_c = sht1x.readTemperatureC();
+temp_f = sht1x.readTemperatureF();
+humidity = sht1x.readHumidity();
+  u8g.firstPage();  
+  do {
+    draw();
+  } while( u8g.nextPage() );
+
+// Print the values to the serial port
+Serial.print("Temperature: ");
+Serial.print(temp_c, DEC);
+Serial.print("C / ");
+Serial.print(temp_f, DEC);
+Serial.print("F. Humidity: ");
+Serial.print(humidity);
+Serial.println("%");
+
+delay(2000);
+}
